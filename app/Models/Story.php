@@ -22,4 +22,14 @@ class Story extends Model
     {
         return $this->hasMany(Chapter::class, 'story_id', 'story_id');
     }
+
+    public function coverImages()
+    {
+        return $this->hasMany(Image::class, 'story_id', 'story_id')->coverImages();
+    }
+
+    public function licenseImages()
+    {
+        return $this->hasMany(Image::class, 'story_id', 'story_id')->licenseImages();
+    }
 }

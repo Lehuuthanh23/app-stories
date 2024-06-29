@@ -22,4 +22,9 @@ class Chapter extends Model
     {
         return $this->belongsTo(Story::class, 'story_id', 'story_id');
     }
+
+    public function chapterImages()
+    {
+        return $this->hasMany(Image::class, 'chapter_id', 'chapter_id')->chapterImages();
+    }
 }
