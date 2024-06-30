@@ -12,6 +12,7 @@ class Story extends Model
     protected $primaryKey = 'story_id';
 
     protected $fillable = [
+        'story_id',
         'title',
         'author_id',
         'summary',
@@ -23,6 +24,12 @@ class Story extends Model
         return $this->hasMany(Chapter::class, 'story_id', 'story_id');
     }
 
+    public function categories()
+    {
+        return $this->belongsToMany(Category::class, 'category_story', 'story_id', 'category_id');
+    }
+
+
     public function coverImages()
     {
         return $this->hasMany(Image::class, 'story_id', 'story_id')->coverImages();
@@ -30,6 +37,12 @@ class Story extends Model
 
     public function licenseImages()
     {
-        return $this->hasMany(Image::class, 'story_id', 'story_id')->licenseImages();
+        return $this->hasMany(LicenseImage::class, 'story_id', 'story_id');
     }
+
+    public function getChaptersCountAttribute()
+    {
+        return $this->chapters()->count();
+    }
+
 }

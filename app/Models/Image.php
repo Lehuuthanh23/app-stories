@@ -15,7 +15,6 @@ class Image extends Model
         'story_id',
         'chapter_id',
         'is_cover_image',
-        'is_license_image',
     ];
     
     /**
@@ -26,15 +25,9 @@ class Image extends Model
         return $query->where('is_cover_image', true);
     }
 
-    public function scopeLicenseImages($query)
-    {
-        return $query->where('is_license_image', true);
-    }
-
     public function scopeChapterImages($query)
     {
-        return $query->where('is_license_image', false)
-                    ->where('is_cover_image', false);
+        return $query->where('is_cover_image', false);
     }
 
     public function getPathAttribute($value)
@@ -44,16 +37,16 @@ class Image extends Model
     /**
      * Get the story that owns the image.
      */
-    public function story()
-    {
-        return $this->belongsTo(Story::class, 'story_id', 'story_id');
-    }
+    // public function story()
+    // {
+    //     return $this->belongsTo(Story::class, 'story_id', 'story_id');
+    // }
 
-    /**
-     * Get the chapter that owns the image.
-     */
-    public function chapter()
-    {
-        return $this->belongsTo(Chapter::class, 'chapter_id', 'chapter_id');
-    }
+    // /**
+    //  * Get the chapter that owns the image.
+    //  */
+    // public function chapter()
+    // {
+    //     return $this->belongsTo(Chapter::class, 'chapter_id', 'chapter_id');
+    // }
 }

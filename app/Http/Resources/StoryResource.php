@@ -5,6 +5,7 @@ namespace App\Http\Resources;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 use App\Http\Resources\ChapterResource;
+use App\Http\Resources\CategoryResource;
 
 class StoryResource extends JsonResource
 {
@@ -21,6 +22,9 @@ class StoryResource extends JsonResource
             'title' => $this->title,
             'author_id' => $this->author_id,
             'summary' => $this->summary,
+            'is_completed' =>$this->is_complete,
+            'categories' => CategoryResource::collection($this->whenLoaded('categories')),
+            'chapters_count' => $this->chapters_count,
             'active' => $this->active,
             'chapters' => ChapterResource::collection($this->whenLoaded('chapters')),
             'license_image' => $this->licenseImages,

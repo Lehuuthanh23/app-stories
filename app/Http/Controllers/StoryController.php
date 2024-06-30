@@ -7,16 +7,24 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use App\Models\Chapter;
 use App\Models\Image;
+use App\Models\LicenseImage;
 use Illuminate\Support\Facades\Log;
 use App\Http\Resources\StoryResource;
 
 
 class StoryController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $stories = Story::with('chapters')->paginate();
-        return StoryResource::collection($stories);
+        Log::info('Request data: ', $request->all());
+        Log::info('active: '.$request->is_active);
+        $stories = Story::with(['chapters', 'categories'])
+        ->when($request->has('is_active'), function ($query) use ($request) {
+            $query->where('active', $request->is_active == 1 ? 1 : 0);
+        })
+        ->paginate();
+
+    return StoryResource::collection($stories);
     }
 
     public function store(Request $request)
@@ -27,6 +35,8 @@ class StoryController extends Controller
         $story->summary = $request->summary;
         $story->active = 0;
         $story->save();
+
+        $story->categories()->attach($request->category_ids);
 
         $chapter = new Chapter();
         $chapter->story_id = $story->story_id;
@@ -55,7 +65,6 @@ class StoryController extends Controller
                 $image->story_id = $story->story_id;
                 $image->chapter_id = $chapter->chapter_id;
                 $image->is_cover_image = false;
-                $image->is_license_image = false;
                 $image->save();
                 //
 
@@ -78,12 +87,10 @@ class StoryController extends Controller
                 $path = $file->storeAs($storagePath, $filename);
 
                 //Save image
-                $image = new Image();
+                $image = new LicenseImage();
                 $image->path = $path;
                 $image->story_id = $story->story_id;
                 $image->chapter_id = $chapter->chapter_id;
-                $image->is_cover_image = false;
-                $image->is_license_image = true;
                 $image->save();
                 //
 
@@ -107,7 +114,6 @@ class StoryController extends Controller
             $image->story_id = $story->story_id;
             $image->chapter_id = $chapter->chapter_id;
             $image->is_cover_image = true;
-            $image->is_license_image = false;
             $image->save();
             //
         }
@@ -116,8 +122,11 @@ class StoryController extends Controller
 
     public function show($id)
     {
-        $story = Story::with('chapters')->findOrFail($id);
-        return new StoryResource($story);
+        $story = Story::with(['chapters', 'categories'])->find($id);
+        if($story)
+            return new StoryResource($story);
+        else
+            return response()->json(["message" => "Không có"], 401);
     }
 
     public function update(Request $request, $id)
@@ -140,5 +149,18 @@ class StoryController extends Controller
         Story::findOrFail($id)->delete();
 
         return response()->json(null, 204);
+    }
+
+    public function approveStory($id){
+
+        Log::info('Id truyện: '. $id);
+        $story = Story::where('story_id', $id)->first();
+        if ($story) {
+            $story->active = 1;
+            $story->save();
+            return response()->json(["message" => "Phê duyệt thành công"], 200);
+        } else {
+            return response()->json(["message" => "Câu chuyện không tồn tại"], 404);
+        }
     }
 }
