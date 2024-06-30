@@ -27,8 +27,8 @@ class StoryResource extends JsonResource
             'chapters_count' => $this->chapters_count,
             'active' => $this->active,
             'chapters' => ChapterResource::collection($this->whenLoaded('chapters')),
-            'license_image' => $this->licenseImages,
-            'cover_image' => $this->coverImages,
+            'license_image' => $this->licenseImagePaths(),
+            'cover_image' => $this->coverImagePaths(),
         ];
     }
 }

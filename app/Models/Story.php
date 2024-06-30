@@ -40,6 +40,16 @@ class Story extends Model
         return $this->hasMany(LicenseImage::class, 'story_id', 'story_id');
     }
 
+    public function coverImagePaths()
+    {
+        return $this->coverImages()->pluck('path')->toArray();
+    }
+
+    public function licenseImagePaths()
+    {
+        return $this->licenseImages()->pluck('path')->toArray();
+    }
+
     public function getChaptersCountAttribute()
     {
         return $this->chapters()->count();
