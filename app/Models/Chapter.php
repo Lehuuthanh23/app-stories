@@ -27,4 +27,10 @@ class Chapter extends Model
     {
         return $this->hasMany(Image::class, 'chapter_id', 'chapter_id')->chapterImages();
     }
+
+    public function chapterImagesPaths()
+    {
+        return $this->chapterImages()->pluck('path')->toArray();;
+    }
+
 }
