@@ -55,4 +55,13 @@ class Story extends Model
         return $this->chapters()->count();
     }
 
+    public function favouritedByUsers()
+    {
+        return $this->belongsToMany(User::class, 'favourite_stories', 'story_id', 'user_id');
+    }
+
+    public function author()
+    {
+        return $this->belongsTo(User::class, 'author_id', 'user_id');
+    }
 }

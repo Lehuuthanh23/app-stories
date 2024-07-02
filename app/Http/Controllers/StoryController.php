@@ -16,9 +16,7 @@ class StoryController extends Controller
 {
     public function index(Request $request)
     {
-        Log::info('Request data: ', $request->all());
-        Log::info('active: '.$request->is_active);
-        $stories = Story::with(['chapters', 'categories'])
+        $stories = Story::with(['chapters', 'categories', 'author', 'favouritedByUsers'])
         ->when($request->has('is_active'), function ($query) use ($request) {
             $query->where('active', $request->is_active == 1 ? 1 : 0);
         })
@@ -122,7 +120,7 @@ class StoryController extends Controller
 
     public function show($id)
     {
-        $story = Story::with(['chapters', 'categories'])->find($id);
+        $story = Story::with(['chapters', 'categories', 'author', 'favouritedByUsers'])->find($id);
         if($story)
             return new StoryResource($story);
         else

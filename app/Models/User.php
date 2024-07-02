@@ -23,8 +23,8 @@ class User extends Authenticatable
         'username',
         'password',
         'email',
+        'birth_date',
         'created_at',
-        'age'
     ];
 
     protected $hidden = [
@@ -42,5 +42,10 @@ class User extends Authenticatable
     public function chapters()
     {
         return $this->hasManyThrough(Chapter::class, Story::class, 'author_id', 'story_id');
+    }
+
+    public function favouriteStories()
+    {
+        return $this->belongsToMany(Story::class, 'favourite_stories', 'user_id', 'story_id');
     }
 }
