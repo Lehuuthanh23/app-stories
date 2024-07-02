@@ -17,22 +17,16 @@ class UserController extends Controller
     public function store(Request $request)
     {
         Log::info('Vao them');
-        $validatedData = $request->validate([
-            'user_id' => 'required|string|unique:users',
-            'username' => 'required|string|max:50|unique:users',
-            'password' => 'required|string|min:6',
-            'email' => 'required|string|email|max:100|unique:users',
-            'age' => 'required|int',
-        ]);
-        Log::info('Validated Data:', $validatedData);
-        $user = User::create([
-            'user_id' => $validatedData['user_id'],
-            'username' => $validatedData['username'],
-            'password' => bcrypt($request->password),
-            'email' => $validatedData['email'],
-            'age' => $validatedData['age']
-        ]);
-
+        $user = new User();
+        $user->user_id = $request->user_id;
+        $user->username = $request->username;
+        $user->password = $request->password;
+        $user->email = $request->email;
+        $user->birth_date = $request->birth_date;
+        if (isset($user->password)) {
+            $user->password = bcrypt($user->password);
+        }
+        $user->save();
         return response()->json($user, 201);
     }
 
@@ -49,7 +43,7 @@ class UserController extends Controller
             'username' => 'sometimes|required|string|max:50|unique:users,username',
             'password' => 'sometimes|required|string|min:6',
             'email' => 'sometimes|required|string|email|max:100|unique:users,email',
-            'age' => 'sometimes|required|int|age',
+            'birth_date' => 'sometimes|required|date',
         ]);
         Log::info('Validated Data:', $validatedData);
         if (isset($validatedData['password'])) {
