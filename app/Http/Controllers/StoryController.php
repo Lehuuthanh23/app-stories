@@ -16,16 +16,26 @@ class StoryController extends Controller
 {
     public function index(Request $request)
     {
-        Log::info('Request data: ', $request->all());
-        Log::info('active: '.$request->is_active);
-        $stories = Story::with(['chapters', 'categories'])
-        ->when($request->has('is_active'), function ($query) use ($request) {
-            $query->where('active', $request->is_active == 1 ? 1 : 0);
-        })
-        ->paginate();
+        $stories = Story::with(['chapters', 'categories', 'author', 'favouritedByUsers'])
+            ->when($request->has('is_active'), function ($query) use ($request) {
+                $query->where('active', $request->is_active == 1 ? 1 : 0);
+            })
+            ->when($request->has('search_string'), function ($query) use ($request) {
+                $search = $request->search_string;
+                $query->where('title', 'like', "%{$search}%");
+            })
+            ->when($request->has('categories_id'), function ($query) use ($request) {
+                $categories = $request->categories_id;
+                $query->whereHas('categories', function ($q) use ($categories) {
+                    $q->whereIn('categories.category_id', $categories);
+                });
+            })
+            ->paginate();
 
-    return StoryResource::collection($stories);
+        return StoryResource::collection($stories);
     }
+
+
 
     public function store(Request $request)
     {
@@ -47,16 +57,16 @@ class StoryController extends Controller
 
         if ($request->hasFile('chapter_image')) {
             $files = $request->file('chapter_image');
-            $mainFolder = $story->story_id; 
+            $mainFolder = $story->story_id;
             $storagePath = 'public/stories/' . $mainFolder . '/1';
-        
+
             // Đảm bảo thư mục tồn tại, nếu không sẽ tạo thư mục
             if (!Storage::exists($storagePath)) {
                 Storage::makeDirectory($storagePath);
             }
             $count = 0;
             foreach ($files as $file) {
-                $filename = "1".'_img_chapter_' . $count++ . '.' . 'jpg'; // Đổi tên file
+                $filename = "1" . '_img_chapter_' . $count++ . '.' . 'jpg'; // Đổi tên file
                 $path = $file->storeAs($storagePath, $filename);
 
                 //Save image
@@ -74,16 +84,16 @@ class StoryController extends Controller
 
         if ($request->hasFile('license_image')) {
             $files = $request->file('license_image');
-            $mainFolder = $story->story_id; 
+            $mainFolder = $story->story_id;
             $storagePath = 'public/stories/' . $mainFolder . '/license';
-        
+
             // Đảm bảo thư mục tồn tại, nếu không sẽ tạo thư mục
             if (!Storage::exists($storagePath)) {
                 Storage::makeDirectory($storagePath);
             }
             $count = 0;
             foreach ($files as $file) {
-                $filename = "$story->story_id".'_img_document_' . $count++ . '.' . 'jpg'; // Đổi tên file
+                $filename = "$story->story_id" . '_img_document_' . $count++ . '.' . 'jpg'; // Đổi tên file
                 $path = $file->storeAs($storagePath, $filename);
 
                 //Save image
@@ -100,14 +110,14 @@ class StoryController extends Controller
 
         if ($request->hasFile('cover_image')) {
             $file = $request->file('cover_image');
-            $mainFolder = $story->story_id; 
+            $mainFolder = $story->story_id;
             Log::info('Story id: ' . $mainFolder);
-            $storagePath = 'public/stories/'.$mainFolder; //. $mainFolder;
-             // Đảm bảo thư mục tồn tại, nếu không sẽ tạo thư mục
+            $storagePath = 'public/stories/' . $mainFolder; //. $mainFolder;
+            // Đảm bảo thư mục tồn tại, nếu không sẽ tạo thư mục
             if (!Storage::exists($storagePath)) {
                 Storage::makeDirectory($storagePath);
             }
-            $path = $file->storeAs($storagePath, "$mainFolder"."_$story->title".'.jpg');
+            $path = $file->storeAs($storagePath, "$mainFolder" . "_$story->title" . '.jpg');
             //Save image
             $image = new Image();
             $image->path = $path;
@@ -122,8 +132,8 @@ class StoryController extends Controller
 
     public function show($id)
     {
-        $story = Story::with(['chapters', 'categories'])->find($id);
-        if($story)
+        $story = Story::with(['chapters', 'categories', 'author', 'favouritedByUsers'])->find($id);
+        if ($story)
             return new StoryResource($story);
         else
             return response()->json(["message" => "Không có"], 401);
@@ -151,9 +161,10 @@ class StoryController extends Controller
         return response()->json(null, 204);
     }
 
-    public function approveStory($id){
+    public function approveStory($id)
+    {
 
-        Log::info('Id truyện: '. $id);
+        Log::info('Id truyện: ' . $id);
         $story = Story::where('story_id', $id)->first();
         if ($story) {
             $story->active = 1;
