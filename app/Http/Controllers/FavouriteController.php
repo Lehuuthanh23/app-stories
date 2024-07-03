@@ -21,4 +21,16 @@ class FavouriteController extends Controller
 
         return response()->json(['message' => 'Thích truyện thành công'], 200);
     }
+
+    public function deleteFavourite(Request $request)
+    {
+        $storyId = $request->story_id;
+        $user = User::find($request->user_id);
+        if ($user->favouriteStories()->where('favourite_stories.story_id', $storyId)->exists()) {
+            $user->favouriteStories()->detach($storyId);
+            return response()->json(['message' => 'Bỏ thích truyện thành công'], 200);
+        }
+
+        return response()->json(['message' => 'Truyện này không có trong danh sách yêu thích của bạn'], 400);
+    }
 }
