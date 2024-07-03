@@ -28,4 +28,4 @@ Route::get('/notifications/user/{userId}', [NotificationController::class, 'getB
 
 //favourite story
 Route::post('/favourite-story', [FavouriteController::class, 'favouriteStory']);
-
+Route::post('/delete-favourite-story', [FavouriteController::class, 'deleteFavourite']);
