@@ -5,9 +5,12 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Chapter;
 use App\Models\Image;
+use App\Models\Notification;
 use App\Http\Resources\ChapterResource;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\DB;
+
 
 class ChapterController extends Controller
 {
@@ -58,6 +61,21 @@ class ChapterController extends Controller
                 Log::info('File stored at: ' . $path);
             }
         }
+        // Gửi thông báo cho người dùng yêu thích câu chuyện
+    $favouriteUsers = DB::table('favourite_stories')
+    ->where('story_id', $chapter->story_id)
+    ->pluck('user_id');
+
+    foreach ($favouriteUsers as $userId) {
+    $notification = new Notification();
+    $notification->user_id = $userId;
+    $notification->title = 'Thông báo chap mới';
+    $notification->title = 0;
+    $notification->type = 'general';
+    $notification->message = 'A new chapter has been added to a story you like!';
+    $notification->save();
+    }
+
         return response()->json($chapter, 201);
     }
 

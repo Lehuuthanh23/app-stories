@@ -16,6 +16,13 @@ class StoryController extends Controller
 {
     public function index(Request $request)
     {
+        Log::info('Request data: ', $request->all());
+
+        $categories = $request->input('categories_id');
+        if (is_string($categories)) {
+            $categories = json_decode($categories, true);
+        }
+
         $stories = Story::with(['chapters', 'categories', 'author', 'favouritedByUsers'])
             ->when($request->has('is_active'), function ($query) use ($request) {
                 $query->where('active', $request->is_active == 1 ? 1 : 0);
@@ -24,8 +31,7 @@ class StoryController extends Controller
                 $search = $request->search_string;
                 $query->where('title', 'like', "%{$search}%");
             })
-            ->when($request->has('categories_id'), function ($query) use ($request) {
-                $categories = $request->categories_id;
+            ->when(!empty($categories), function ($query) use ($categories) {
                 $query->whereHas('categories', function ($q) use ($categories) {
                     $q->whereIn('categories.category_id', $categories);
                 });
@@ -34,6 +40,7 @@ class StoryController extends Controller
 
         return StoryResource::collection($stories);
     }
+
 
 
 
