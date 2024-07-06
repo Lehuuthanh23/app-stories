@@ -8,6 +8,7 @@ use App\Http\Controllers\ChapterController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\FavouriteController;
+use App\Http\Controllers\CommentController;
 
 //user
 Route::apiResource('users', UserController::class);
@@ -29,3 +30,7 @@ Route::get('/notifications/user/{userId}', [NotificationController::class, 'getB
 //favourite story
 Route::post('/favourite-story', [FavouriteController::class, 'favouriteStory']);
 Route::post('/delete-favourite-story', [FavouriteController::class, 'deleteFavourite']);
+
+//comment
+Route::apiResource('/comment', CommentController::class);
+Route::post('/comments/bystory', [CommentController::class, 'storeByStoryID']);
