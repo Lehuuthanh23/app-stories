@@ -32,5 +32,8 @@ class Chapter extends Model
     {
         return $this->chapterImages()->pluck('path')->toArray();;
     }
-
+    public function comments()
+    {
+        return $this->hasMany(Comment::class, 'chapter_id');
+    }
 }

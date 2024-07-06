@@ -45,4 +45,8 @@ class User extends Authenticatable
     {
         return $this->belongsToMany(Story::class, 'favourite_stories', 'user_id', 'story_id');
     }
+    public function comments()
+    {
+        return $this->hasMany(Comment::class, 'user_id');
+    }
 }
