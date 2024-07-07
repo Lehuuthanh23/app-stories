@@ -7,6 +7,7 @@ use Illuminate\Http\Resources\Json\JsonResource;
 use App\Http\Resources\ChapterResource;
 use App\Http\Resources\CategoryResource;
 use App\Http\Resources\UserResource;
+use App\Http\Controllers\StoryController;
 
 class StoryResource extends JsonResource
 {
@@ -22,8 +23,9 @@ class StoryResource extends JsonResource
             'story_id' => $this->story_id,
             'title' => $this->title,
             'summary' => $this->summary,
-            'is_completed' =>$this->is_complete,
+            'is_completed' => $this->is_complete,
             'author' => $this->author,
+            'total_view' => $this->story_views_count,
             'favourited_users' => UserResource::collection($this->whenLoaded('favouritedByUsers')),
             'categories' => CategoryResource::collection($this->whenLoaded('categories')),
             'chapters_count' => $this->chapters_count,

@@ -27,6 +27,8 @@ class Notification extends Model
         'message',
         'type',
         'is_read',
+        'chapter_id',
+        'story_id',
     ];
 
     /**
@@ -35,5 +37,15 @@ class Notification extends Model
     public function user()
     {
         return $this->belongsTo(User::class, 'user_id', 'user_id');
+    }
+
+    public function story()
+    {
+        return $this->belongsTo(Story::class, 'story_id', 'story_id');
+    }
+
+    public function chapter()
+    {
+        return $this->belongsTo(Chapter::class, 'chapter_id', 'chapter_id');
     }
 }

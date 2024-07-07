@@ -23,8 +23,15 @@ class UserController extends Controller
         $user->password = $request->password;
         $user->email = $request->email;
         $user->birth_date = $request->birth_date;
+        $user->bio = $request->bio;
+        $user->pen_name = $request->pen_name;
+        $user->previous_works = $request->previous_works;
+        $user->role = $request->role;
         if (isset($user->password)) {
             $user->password = bcrypt($user->password);
+        }
+        if ($request->role == 'author') {
+            $user->is_active = false;
         }
         $user->save();
         return response()->json($user, 201);

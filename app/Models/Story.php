@@ -64,4 +64,19 @@ class Story extends Model
     {
         return $this->belongsTo(User::class, 'author_id', 'user_id');
     }
+
+    public function notifications()
+    {
+        return $this->hasMany(Notification::class, 'story_id', 'story_id');
+    }
+
+    public function storyViews()
+    {
+        return $this->hasMany(StoryView::class, 'story_id');
+    }
+
+    // public function getTotalViewsAttribute()
+    // {
+    //     return $this->storyViews()->count();
+    // }
 }
