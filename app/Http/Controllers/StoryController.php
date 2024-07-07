@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use App\Models\Chapter;
 use App\Models\Image;
+use App\Models\StoryView;
 use App\Models\LicenseImage;
 use Illuminate\Support\Facades\Log;
 use App\Http\Resources\StoryResource;
@@ -16,7 +17,7 @@ class StoryController extends Controller
 {
     public function index(Request $request)
     {
-        Log::info('Request data: ', $request->all());
+        // Log::info('Request data: ', $request->all());
 
         $categories = $request->input('categories_id');
         if (is_string($categories)) {
@@ -24,6 +25,7 @@ class StoryController extends Controller
         }
 
         $stories = Story::with(['chapters', 'categories', 'author', 'favouritedByUsers'])
+            ->withCount('storyViews')
             ->when($request->has('is_active'), function ($query) use ($request) {
                 $query->where('active', $request->is_active == 1 ? 1 : 0);
             })
@@ -36,7 +38,18 @@ class StoryController extends Controller
                     $q->whereIn('categories.category_id', $categories);
                 });
             })
-            ->paginate();
+            ->when($request->has('is_complete'), function ($query) use ($request) {
+                $query->where('is_complete', $request->is_complete == 1 ? 1 : 0);
+            })
+            ->when($request->has('user_id'), function ($query) use ($request) {
+                $query->where('author_id', $request->user_id);
+            })
+            ->when($request->has('is_story_new') && $request->is_story_new == 1, function ($query) {
+                $query->orderBy('created_at', 'desc');
+            }, function ($query) {
+                $query->orderBy('story_views_count', 'desc');
+            })
+            ->paginate(5);
 
         return StoryResource::collection($stories);
     }
@@ -180,5 +193,32 @@ class StoryController extends Controller
         } else {
             return response()->json(["message" => "Câu chuyện không tồn tại"], 404);
         }
+    }
+
+    public function addView(Request $request, $story_id)
+    {
+        $user_id = $request->user_id;
+
+        $storyView = StoryView::where('story_id', $story_id)
+            ->where('user_id', $user_id)
+            ->first();
+
+        if (!$storyView) {
+            StoryView::create([
+                'story_id' => $story_id,
+                'user_id' => $user_id,
+                'view_count' => 1,
+                'last_viewed' => now()
+            ]);
+        }
+
+        return response()->json(['message' => 'Xem truyện thành công'], 200);
+    }
+
+    public function getTotalViews($story_id)
+    {
+        $totalViews = StoryView::where('story_id', $story_id)->count();
+
+        return response()->json(['total_views' => $totalViews], 200);
     }
 }

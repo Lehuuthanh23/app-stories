@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Notification;
 use Illuminate\Http\Request;
+use App\Http\Resources\NotificationResource;
 
 class NotificationController extends Controller
 {
@@ -45,7 +46,22 @@ class NotificationController extends Controller
     public function getByUserId($userId)
     {
         // Get all notifications for the given user ID
-        $notifications = Notification::where('user_id', $userId)->get();
-        return response()->json($notifications);
+        $notifications = Notification::where('user_id', $userId)->with(['user', 'chapter', 'story'])->get();
+        return  NotificationResource::collection($notifications);
+    }
+
+     /**
+     * Mark a notification as read.
+     *
+     * @param int $id
+     * @return \Illuminate\Http\Response
+     */
+    public function markAsRead($id)
+    {
+        $notification = Notification::findOrFail($id);
+        $notification->is_read = true;
+        $notification->save();
+
+        return response()->json(new NotificationResource($notification), 200);
     }
 }

@@ -36,4 +36,8 @@ class Chapter extends Model
     {
         return $this->hasMany(Comment::class, 'chapter_id');
     }
+    public function notifications()
+    {
+        return $this->hasMany(Notification::class, 'chapter_id', 'chapter_id');
+    }
 }

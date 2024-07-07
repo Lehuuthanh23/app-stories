@@ -4,7 +4,9 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Chapter;
+use App\Models\Story;
 use App\Models\Image;
+use App\Models\User;
 use App\Models\Notification;
 use App\Http\Resources\ChapterResource;
 use Illuminate\Support\Facades\Storage;
@@ -37,16 +39,16 @@ class ChapterController extends Controller
 
         if ($request->hasFile('chapter_image')) {
             $files = $request->file('chapter_image');
-            $mainFolder = $request->story_id; 
+            $mainFolder = $request->story_id;
             $storagePath = 'public/stories/' . $mainFolder . "/$request->chapter_number";
-            
+
             // Đảm bảo thư mục tồn tại, nếu không sẽ tạo thư mục
             if (!Storage::exists($storagePath)) {
                 Storage::makeDirectory($storagePath);
             }
             $count = 0;
             foreach ($files as $file) {
-                $filename = $request->chapter_number.'_img_chapter_' . $count++ . '.' . 'jpg'; // Đổi tên file
+                $filename = $request->chapter_number . '_img_chapter_' . $count++ . '.' . 'jpg'; // Đổi tên file
                 $path = $file->storeAs($storagePath, $filename);
 
                 //Save image
@@ -61,21 +63,25 @@ class ChapterController extends Controller
                 Log::info('File stored at: ' . $path);
             }
         }
+
+
+        $story = Story::find($chapter->story_id);
+        $user = User::find($story->author_id);
         // Gửi thông báo cho người dùng yêu thích câu chuyện
-    $favouriteUsers = DB::table('favourite_stories')
-    ->where('story_id', $chapter->story_id)
-    ->pluck('user_id');
+        $favouriteUsers = DB::table('favourite_stories')
+            ->where('story_id', $chapter->story_id)
+            ->pluck('user_id');
 
-    foreach ($favouriteUsers as $userId) {
-    $notification = new Notification();
-    $notification->user_id = $userId;
-    $notification->title = 'Thông báo chap mới';
-    $notification->title = 0;
-    $notification->type = 'general';
-    $notification->message = 'A new chapter has been added to a story you like!';
-    $notification->save();
-    }
-
+        foreach ($favouriteUsers as $userId) {
+            $notification = new Notification();
+            $notification->user_id = $userId;
+            $notification->title = $story->title;
+            $notification->type = 'general';
+            $notification->message = "$user->username đã cập nhật: Chapter $chapter->chapter_number";
+            $notification->story_id = $chapter->story_id;
+            $notification->chapter_id = $chapter->chapter_id;
+            $notification->save();
+        }
         return response()->json($chapter, 201);
     }
 
@@ -85,12 +91,11 @@ class ChapterController extends Controller
     public function show(string $id)
     {
         $chapter = Chapter::find($id);
-        if($chapter){
+        if ($chapter) {
             return ChapterResource::collection($chapter->get());
-        }else{
+        } else {
             return response()->json(['message' => 'Không có giá trị']);
         }
-        
     }
 
     /**
