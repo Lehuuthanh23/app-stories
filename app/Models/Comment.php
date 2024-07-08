@@ -29,4 +29,8 @@ class Comment extends Model
     {
         return $this->belongsTo(Chapter::class, 'chapter_id');
     }
+    public function story()
+    {
+        return $this->belongsTo(Story::class, 'story_id');
+    }
 }

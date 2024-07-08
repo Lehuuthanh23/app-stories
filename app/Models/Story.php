@@ -75,8 +75,13 @@ class Story extends Model
         return $this->hasMany(StoryView::class, 'story_id');
     }
 
-    // public function getTotalViewsAttribute()
-    // {
-    //     return $this->storyViews()->count();
-    // }
+    public function comments()
+    {
+        return $this->hasMany(Comment::class, 'story_id', 'story_id');
+    }
+
+    public function totalComment()
+    {
+        return $this->comments()->count();
+    }
 }
