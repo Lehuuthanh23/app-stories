@@ -49,13 +49,10 @@ class StoryController extends Controller
             }, function ($query) {
                 $query->orderBy('story_views_count', 'desc');
             })
-            ->paginate(5);
+           ->paginate(5);
 
         return StoryResource::collection($stories);
     }
-
-
-
 
     public function store(Request $request)
     {
@@ -220,5 +217,11 @@ class StoryController extends Controller
         $totalViews = StoryView::where('story_id', $story_id)->count();
 
         return response()->json(['total_views' => $totalViews], 200);
+    }
+
+    public function totalStories(){
+        $totalStories = Story::count();
+        return response()->json(['total_stories' => $totalStories], 200);
+        return $totalStories;
     }
 }

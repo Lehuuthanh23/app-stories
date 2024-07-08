@@ -26,6 +26,7 @@ class StoryResource extends JsonResource
             'is_completed' => $this->is_complete,
             'author' => $this->author,
             'total_view' => $this->story_views_count,
+            'total_comment' => $this->totalComment(),
             'favourited_users' => UserResource::collection($this->whenLoaded('favouritedByUsers')),
             'categories' => CategoryResource::collection($this->whenLoaded('categories')),
             'chapters_count' => $this->chapters_count,
@@ -36,4 +37,3 @@ class StoryResource extends JsonResource
         ];
     }
 }
-

@@ -16,6 +16,7 @@ Route::apiResource('users', UserController::class);
 //stories
 Route::apiResource('stories', StoryController::class);
 Route::patch('/stories/approve/{id}', [StoryController::class, 'approveStory']);
+Route::get('/total/storise', [StoryController::class, 'totalStories']);
 
 //View story
 Route::post('/story/view/{story_id}', [StoryController::class, 'addView']);
