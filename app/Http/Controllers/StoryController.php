@@ -68,7 +68,6 @@ class StoryController extends Controller
         $chapter = new Chapter();
         $chapter->story_id = $story->story_id;
         $chapter->title = $request->title;
-        $chapter->content = '';
         $chapter->chapter_number = 1;
         $chapter->save();
 

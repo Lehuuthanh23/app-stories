@@ -19,7 +19,6 @@ class ChapterResource extends JsonResource
             'chapter_id' => $this->chapter_id,
             'story_id' => $this->story_id,
             'title' => $this->title,
-            'content' => $this->content,
             'chapter_number' => $this->chapter_number,
             'images' => $this->chapterImagesPaths(),
             'created_at' => $this->created_at,
