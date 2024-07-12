@@ -24,7 +24,7 @@ class StoryController extends Controller
             $categories = json_decode($categories, true);
         }
 
-        $stories = Story::with(['chapters', 'categories', 'author', 'favouritedByUsers'])
+        $stories = Story::with(['chapters', 'categories', 'author', 'favouritedByUsers', 'usersView'])
             ->withCount('storyViews')
             ->when($request->has('is_active'), function ($query) use ($request) {
                 $query->where('active', $request->is_active == 1 ? 1 : 0);
@@ -149,7 +149,7 @@ class StoryController extends Controller
 
     public function show($id)
     {
-        $story = Story::with(['chapters', 'categories', 'author', 'favouritedByUsers'])->find($id);
+        $story = Story::with(['chapters', 'categories', 'author', 'favouritedByUsers', 'usersView'])->find($id);
         if ($story)
             return new StoryResource($story);
         else

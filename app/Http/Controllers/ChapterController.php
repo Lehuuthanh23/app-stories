@@ -36,19 +36,18 @@ class ChapterController extends Controller
         $chapter->content = '';
         $chapter->chapter_number = $request->chapter_number;
         $chapter->save();
-
+        Log::info($request->all());
         if ($request->hasFile('chapter_image')) {
             $files = $request->file('chapter_image');
             $mainFolder = $request->story_id;
             $storagePath = 'public/stories/' . $mainFolder . "/$request->chapter_number";
 
-            // Đảm bảo thư mục tồn tại, nếu không sẽ tạo thư mục
             if (!Storage::exists($storagePath)) {
                 Storage::makeDirectory($storagePath);
             }
             $count = 0;
             foreach ($files as $file) {
-                $filename = $request->chapter_number . '_img_chapter_' . $count++ . '.' . 'jpg'; // Đổi tên file
+                $filename = $request->chapter_number . '_img_chapter_' . $count++ . '.' . 'jpg';
                 $path = $file->storeAs($storagePath, $filename);
 
                 //Save image
@@ -59,11 +58,9 @@ class ChapterController extends Controller
                 $image->is_cover_image = false;
                 $image->save();
                 //
-
                 Log::info('File stored at: ' . $path);
             }
         }
-
 
         $story = Story::find($chapter->story_id);
         $user = User::find($story->author_id);
@@ -103,8 +100,62 @@ class ChapterController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        //
+        $chapter = Chapter::find($id);
+        if (!$chapter) {
+            return response()->json(['message' => 'Chapter không tồn tại'], 404);
+        }
+
+        Log::info($request->all());
+
+        // Cập nhật thông tin chapter
+        $chapter->title = $request->title ?? $chapter->title;
+        $chapter->content = $request->content ?? $chapter->content;
+        $chapter->chapter_number = $request->chapter_number ?? $chapter->chapter_number;
+        $chapter->save();
+
+        // Xử lý cập nhật hình ảnh
+        if ($request->hasFile('chapter_image')) {
+            Log::info('Có hình');
+            $files = $request->file('chapter_image');
+            $mainFolder = $chapter->story_id;
+            $storagePath = 'public/stories/' . $mainFolder . "/$chapter->chapter_number";
+
+            if (!Storage::exists($storagePath)) {
+                Storage::makeDirectory($storagePath);
+            }
+
+            // Xóa hình ảnh cũ nếu cần
+            $oldImages = Image::where('chapter_id', $chapter->chapter_id)
+                        ->where('is_cover_image', 0)
+                        ->get();
+            foreach ($oldImages as $oldImage) {
+                Storage::delete($oldImage->path);
+                $oldImage->delete();
+            }
+
+            $count = 0;
+            foreach ($files as $file) {
+                $filename = $chapter->chapter_number . '_img_chapter_' . $count++ . '.' . 'jpg';
+                $path = $file->storeAs($storagePath, $filename);
+
+                // Lưu hình ảnh mới
+                $image = new Image();
+                $image->path = $path;
+                $image->story_id = $chapter->story_id;
+                $image->chapter_id = $chapter->chapter_id;
+                $image->is_cover_image = false;
+                $image->save();
+
+                Log::info('File stored at: ' . $path);
+            }
+        } else {
+            Log::info('Không có hình');
+        }
+
+        return response()->json($chapter, 200);
     }
+
+
 
     /**
      * Remove the specified resource from storage.

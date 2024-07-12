@@ -84,4 +84,9 @@ class Story extends Model
     {
         return $this->comments()->count();
     }
+
+    public function usersView()
+    {
+        return $this->hasManyThrough(User::class, StoryView::class, 'story_id', 'user_id', 'story_id', 'user_id');
+    }
 }

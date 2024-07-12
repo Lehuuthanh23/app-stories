@@ -12,11 +12,13 @@ use App\Http\Controllers\CommentController;
 
 //user
 Route::apiResource('users', UserController::class);
+Route::patch('/author/approve/{id}', [UserController::class, 'approveAuthor']);
+Route::get('/new/users', [UserController::class, 'getNewUsers']);
 
 //stories
 Route::apiResource('stories', StoryController::class);
 Route::patch('/stories/approve/{id}', [StoryController::class, 'approveStory']);
-Route::get('/total/storise', [StoryController::class, 'totalStories']);
+Route::get('/total/stories', [StoryController::class, 'totalStories']);
 
 //View story
 Route::post('/story/view/{story_id}', [StoryController::class, 'addView']);
