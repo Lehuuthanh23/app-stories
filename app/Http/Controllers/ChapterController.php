@@ -33,7 +33,6 @@ class ChapterController extends Controller
         $chapter = new Chapter();
         $chapter->story_id = $request->story_id;
         $chapter->title = $request->title;
-        $chapter->content = '';
         $chapter->chapter_number = $request->chapter_number;
         $chapter->save();
         Log::info($request->all());
@@ -73,7 +72,6 @@ class ChapterController extends Controller
             $notification = new Notification();
             $notification->user_id = $userId;
             $notification->title = $story->title;
-            $notification->type = 'general';
             $notification->message = "$user->username đã cập nhật: Chapter $chapter->chapter_number";
             $notification->story_id = $chapter->story_id;
             $notification->chapter_id = $chapter->chapter_id;
@@ -109,7 +107,6 @@ class ChapterController extends Controller
 
         // Cập nhật thông tin chapter
         $chapter->title = $request->title ?? $chapter->title;
-        $chapter->content = $request->content ?? $chapter->content;
         $chapter->chapter_number = $request->chapter_number ?? $chapter->chapter_number;
         $chapter->save();
 

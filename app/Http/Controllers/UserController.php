@@ -26,16 +26,12 @@ class UserController extends Controller
         $user = new User();
         $user->user_id = $request->user_id;
         $user->username = $request->username;
-        $user->password = $request->password;
         $user->email = $request->email;
         $user->birth_date = $request->birth_date;
         $user->bio = $request->bio;
         $user->pen_name = $request->pen_name;
         $user->previous_works = $request->previous_works;
         $user->role = $request->role;
-        if (isset($user->password)) {
-            $user->password = bcrypt($user->password);
-        }
         if ($request->role == 'author') {
             $user->is_active = false;
         }
@@ -54,17 +50,10 @@ class UserController extends Controller
 
         $validatedData = $request->validate([
             'username' => 'sometimes|required|string|max:50|unique:users,username',
-            'password' => 'sometimes|required|string|min:6',
             'email' => 'sometimes|required|string|email|max:100|unique:users,email',
             'birth_date' => 'sometimes|required|date',
         ]);
-        Log::info('Validated Data:', $validatedData);
-        if (isset($validatedData['password'])) {
-            $validatedData['password'] = bcrypt($validatedData['password']);
-        }
-
         $user->update($validatedData);
-
         return response()->json($user, 200);
     }
 
