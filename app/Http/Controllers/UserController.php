@@ -4,14 +4,20 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
+use Carbon\Carbon;
 
 class UserController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        return User::all();
+        $query = User::query();
+
+        if ($request->has('is_active')) {
+            $query->where('is_active', $request->input('is_active'));
+        }
+
+        return $query->get();
     }
 
     public function store(Request $request)
@@ -69,19 +75,32 @@ class UserController extends Controller
         return response()->json(null, 204);
     }
 
-    // public function login(Request $request)
-    // {
-    //     $credentials = $request->validate([
-    //         'email' => 'required|string|email',
-    //         'password' => 'required|string',
-    //     ]);
+    public function approveAuthor($id)
+    {
+        $user = User::where('user_id', $id)->first();
+        if ($user) {
+            $user->is_active = 1;
+            $user->save();
+            return response()->json(["message" => "Phê duyệt tác giả thành công"], 200);
+        } else {
+            return response()->json(["message" => "Tác giả không tồn tại"], 404);
+        }
+    }
 
-    //     if (Auth::attempt($credentials)) {
-    //         $user = Auth::user();
-    //         $token = $user->createToken('authToken')->accessToken;
-    //         return response()->json(['token' => $token], 200);
-    //     } else {
-    //         return response()->json(['error' => 'Unauthorized'], 401);
-    //     }
-    // }
+    public function getNewUsers(Request $request)
+    {
+        $timePeriod = $request->input('time_period', 'week');
+        $now = Carbon::now();
+
+        if ($timePeriod === 'week') {
+            $startDate = $now->subWeek();
+        } elseif ($timePeriod === 'month') {
+            $startDate = $now->subMonth();
+        } else {
+            return response()->json(['message' => 'Tham số time_period không hợp lệ. Chỉ chấp nhận "week" hoặc "month".'], 400);
+        }
+
+        $newUsersCount = User::where('created_at', '>=', $startDate)->count();
+        return response()->json(['new_users_count' => $newUsersCount]);
+    }
 }

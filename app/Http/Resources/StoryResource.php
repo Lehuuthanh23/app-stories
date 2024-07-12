@@ -27,6 +27,7 @@ class StoryResource extends JsonResource
             'author' => $this->author,
             'total_view' => $this->story_views_count,
             'total_comment' => $this->totalComment(),
+            'view_users' => UserResource::collection($this->whenLoaded('usersView')),
             'favourited_users' => UserResource::collection($this->whenLoaded('favouritedByUsers')),
             'categories' => CategoryResource::collection($this->whenLoaded('categories')),
             'chapters_count' => $this->chapters_count,
