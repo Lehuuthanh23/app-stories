@@ -42,3 +42,13 @@ Route::post('/delete-favourite-story', [FavouriteController::class, 'deleteFavou
 //comment
 Route::apiResource('/comment', CommentController::class);
 Route::post('/comments/bystory', [CommentController::class, 'storeByStoryID']);
+
+//post report comment to admin
+Route::post(
+    '/notifications/toadmin',
+    [NotificationController::class, 'storetoAdmin']
+);
+Route::get(
+    '/notifications/getbyadmin',
+    [NotificationController::class, 'getByAdminRole']
+);
