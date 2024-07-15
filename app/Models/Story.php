@@ -17,6 +17,7 @@ class Story extends Model
         'author_id',
         'summary',
         'active',
+        'is_complete',
     ];
 
     public function chapters()
