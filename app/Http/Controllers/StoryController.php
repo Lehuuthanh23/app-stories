@@ -11,7 +11,8 @@ use App\Models\StoryView;
 use App\Models\LicenseImage;
 use Illuminate\Support\Facades\Log;
 use App\Http\Resources\StoryResource;
-
+use Carbon\Carbon;
+use Illuminate\Support\Facades\DB;
 
 class StoryController extends Controller
 {
@@ -27,7 +28,7 @@ class StoryController extends Controller
         $stories = Story::with(['chapters', 'categories', 'author', 'favouritedByUsers', 'usersView'])
             ->withCount('storyViews')
             ->when($request->has('is_active'), function ($query) use ($request) {
-                $query->where('active', $request->is_active == 1 ? 1 : 0);
+                $query->where('active', $request->is_active);
             })
             ->when($request->has('search_string'), function ($query) use ($request) {
                 $search = $request->search_string;
@@ -49,7 +50,7 @@ class StoryController extends Controller
             }, function ($query) {
                 $query->orderBy('story_views_count', 'desc');
             })
-           ->paginate(5);
+            ->paginate(5);
 
         return StoryResource::collection($stories);
     }
@@ -191,6 +192,46 @@ class StoryController extends Controller
         }
     }
 
+    public function disableStory($id)
+    {
+        Log::info('Id truyện: ' . $id);
+        $story = Story::where('story_id', $id)->first();
+        if ($story) {
+            $story->active = 2;
+            $story->save();
+            return response()->json(["message" => "Vô hiệu hóa truyện thành công"], 200);
+        } else {
+            return response()->json(["message" => "Truyện không tồn tại"], 404);
+        }
+    }
+    public function noApproveStory($id)
+    {
+        Log::info('Id truyện: ' . $id);
+        $story = Story::where('story_id', $id)->first();
+        if ($story) {
+            $story->active = 3;
+            $story->save();
+            return response()->json(["message" => "Hủy phê truyện thành công"], 200);
+        } else {
+            return response()->json(["message" => "Truyện không tồn tại"], 404);
+        }
+    }
+
+
+
+    public function completedStory($id)
+    {
+        Log::info('Id truyện: ' . $id);
+        $story = Story::where('story_id', $id)->first();
+        if ($story) {
+            $story->is_complete = 1;
+            $story->save();
+            return response()->json(["message" => "Bạn đã hoàn thành truyện"], 200);
+        } else {
+            return response()->json(["message" => "Truyện không tồn tại"], 404);
+        }
+    }
+
     public function addView(Request $request, $story_id)
     {
         $user_id = $request->user_id;
@@ -218,9 +259,27 @@ class StoryController extends Controller
         return response()->json(['total_views' => $totalViews], 200);
     }
 
-    public function totalStories(){
-        $totalStories = Story::count();
+    public function totalStories()
+    {
+        $totalStories = Story::where('active', 1)->count();
         return response()->json(['total_stories' => $totalStories], 200);
         return $totalStories;
+    }
+
+    public function getNewStories(Request $request)
+    {
+        $timePeriod = $request->input('time_period', 'week');
+        $now = Carbon::now();
+
+        if ($timePeriod === 'week') {
+            $startDate = $now->subWeek();
+        } elseif ($timePeriod === 'month') {
+            $startDate = $now->subMonth();
+        } else {
+            return response()->json(['message' => 'Tham số time_period không hợp lệ. Chỉ chấp nhận "week" hoặc "month".'], 400);
+        }
+
+        $newUsersCount = Story::where('created_at', '>=', $startDate)->count();
+        return response()->json(['new_story_count' => $newUsersCount]);
     }
 }

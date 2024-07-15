@@ -12,6 +12,7 @@ use App\Http\Resources\ChapterResource;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\File;
 
 
 class ChapterController extends Controller
@@ -62,6 +63,8 @@ class ChapterController extends Controller
         }
 
         $story = Story::find($chapter->story_id);
+        $story->is_complete = 0;
+        $story->save();
         $user = User::find($story->author_id);
         // Gửi thông báo cho người dùng yêu thích câu chuyện
         $favouriteUsers = DB::table('favourite_stories')
@@ -123,8 +126,8 @@ class ChapterController extends Controller
 
             // Xóa hình ảnh cũ nếu cần
             $oldImages = Image::where('chapter_id', $chapter->chapter_id)
-                        ->where('is_cover_image', 0)
-                        ->get();
+                ->where('is_cover_image', 0)
+                ->get();
             foreach ($oldImages as $oldImage) {
                 Storage::delete($oldImage->path);
                 $oldImage->delete();
@@ -152,7 +155,52 @@ class ChapterController extends Controller
         return response()->json($chapter, 200);
     }
 
+    public function updateImages(Request $request)
+    {
+        // Validate the input
+        // $request->validate([
+        //     'order' => 'required|array',
+        //     'order.*' => 'integer',
+        //     'story_id' => 'required|integer',
+        //     'chapter_number' => 'required|integer',
+        // ]);
+        Log::info($request->all());
+        $story =   Story::find($request->story_id);
+        if($story->active == 3){
+            $story->active = 0;
+            $story->save();
+        }
+        $order = $request->input('order');
+        if (is_string($order)) {
+            $order = json_decode($order, true);
+        }
+        //$order = $request->input('order');
+        $storyId = $request->story_id;
+        $chapterNumber = $request->chapter_number;
+        $directory = 'public/stories/' . $storyId . '/' . $chapterNumber;
 
+        if (!Storage::exists($directory)) {
+            return response()->json(['message' => 'The directory does not exist.'], 400);
+        }
+
+        $images = Storage::files($directory);
+        $tempNames = [];
+        foreach ($images as $index => $image) {
+            $tempName = $directory . '/temp_' . $index . '.' . pathinfo($image, PATHINFO_EXTENSION);
+            Storage::move($image, $tempName);
+            $tempNames[] = $tempName;
+        }
+
+        foreach ($order as $newIndex => $originalIndex) {
+            $tempName = $tempNames[$originalIndex];
+            $extension = pathinfo($tempName, PATHINFO_EXTENSION);
+            $newFilename = $directory . '/' . $chapterNumber . '_img_chapter_' . $newIndex . '.' . $extension;
+            Storage::move($tempName, $newFilename);
+            Log::info("Renamed $tempName to $newFilename");
+        }
+
+        return response()->json(['message' => 'Images reordered and renamed successfully.']);
+    }
 
     /**
      * Remove the specified resource from storage.
