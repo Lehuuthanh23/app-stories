@@ -89,7 +89,7 @@ class UserController extends Controller
             return response()->json(['message' => 'Tham số time_period không hợp lệ. Chỉ chấp nhận "week" hoặc "month".'], 400);
         }
 
-        $newUsersCount = User::where('created_at', '>=', $startDate)->count();
+        $newUsersCount = User::where('created_at', '>=', $startDate)->where('is_active', 1)->count();
         return response()->json(['new_users_count' => $newUsersCount]);
     }
 }
