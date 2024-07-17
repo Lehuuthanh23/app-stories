@@ -39,4 +39,5 @@ class Chapter extends Model
     {
         return $this->hasMany(Notification::class, 'chapter_id', 'chapter_id');
     }
+    
 }

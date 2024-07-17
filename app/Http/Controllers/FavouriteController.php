@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\User;
 use App\Models\Story;
 use Illuminate\Support\Facades\Log;
+use App\Http\Resources\StoryResource;
 
 class FavouriteController extends Controller
 {
@@ -23,16 +24,27 @@ class FavouriteController extends Controller
     }
     public function getFavouriteStories(Request $request)
     {
-        $user = User::find($request->user_id);
+        $user = User::findOrFail($request->user_id);
 
         if (!$user) {
             return response()->json(['message' => 'Người dùng không tồn tại'], 404);
         }
 
-        $favouriteStories = $user->favouriteStories()->get();
+        $favouriteStories = $user->favouriteStories()->with([
+            'chapters' => function ($query) {
+                $query->with(['chapterImages', 'comments', 'notifications']);
+            },
+            'categories',
+            'author',
+            'favouritedByUsers',
+            'usersView'
+        ])
+        ->withCount('storyViews')
+        ->get();
 
-        return response()->json(['data' => $favouriteStories], 200);
+        return response()->json(['data' => StoryResource::collection($favouriteStories)], 200);
     }
+
     public function deleteFavourite(Request $request)
     {
         $storyId = $request->story_id;
