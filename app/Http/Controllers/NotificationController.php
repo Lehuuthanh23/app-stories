@@ -55,19 +55,34 @@ class NotificationController extends Controller
      */
     public function getByUserId($userId)
     {
-        // Get all notifications for the given user ID
         $notifications = Notification::where('user_id', $userId)->with(['user', 'chapter', 'story'])->get();
         return  NotificationResource::collection($notifications);
     }
     public function getByAdminRole()
     {
-        // Tìm các người dùng có vai trò là admin
         $admins = User::where('role', 'admin')->pluck('user_id');
 
-        // Lấy danh sách các thông báo cho tất cả các người dùng admin
         $notifications = Notification::whereIn('user_id', $admins)
             ->with(['user', 'chapter', 'story'])
             ->get();
+
+        return NotificationResource::collection($notifications);
+    }
+    public function getNotificationsByAuthor($authorId)
+    {
+        // Kiểm tra xem người dùng có vai trò là tác giả hay không
+        $author = User::where('user_id', $authorId)->where('role', 'author')->first();
+
+        if (!$author) {
+            return response()->json(["message" => "Người dùng không tồn tại hoặc không có vai trò là tác giả"], 404);
+        }
+
+        // Lấy tất cả các thông báo của tác giả này
+        $notifications = Notification::where('user_id', $authorId)->with(['user', 'chapter', 'story'])->get();
+
+        if ($notifications->isEmpty()) {
+            return response()->json(["message" => "Không có thông báo nào"], 404);
+        }
 
         return NotificationResource::collection($notifications);
     }
@@ -84,5 +99,11 @@ class NotificationController extends Controller
         $notification->save();
 
         return response()->json(new NotificationResource($notification), 200);
+    }
+    public function destroy($notiID)
+    {
+        Notification::findOrFail($notiID)->delete();
+        return response()->json(['message' => 'Xóa thành công'], 201);
+        //return response()->json(null, 204);
     }
 }

@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Notification;
+use App\Models\User;
 use App\Models\Story;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -180,13 +182,28 @@ class StoryController extends Controller
 
     public function approveStory($id)
     {
-
         Log::info('Id truyện: ' . $id);
         $story = Story::where('story_id', $id)->first();
         if ($story) {
             $story->active = 1;
             $story->save();
-            return response()->json(["message" => "Phê duyệt thành công"], 200);
+            $author = User::where('user_id', $story->author_id)->first();
+            if ($author && $author->role === 'author') {
+                // Tạo thông báo
+                Notification::create([
+                    'user_id' => $author->user_id,
+                    'title' => 'Yêu cầu duyệt truyện',
+                    'message' => 'Truyện ' . $story->title . ' của bạn đăng đã được phê duyệt!',
+                    'is_read' => false,
+                    'story_id' => $story->story_id,
+                ]);
+
+                // Trả về thông báo đã gửi
+                return response()->json([
+                    "message" => "Phê duyệt thành công và thông báo đã được gửi đến user_id: " . $author->user_id
+                ], 200);
+            }
+            return response()->json(["message" => "Phê duyệt thành công nhưng không tìm thấy tác giả"], 200);
         } else {
             return response()->json(["message" => "Câu chuyện không tồn tại"], 404);
         }
@@ -199,6 +216,22 @@ class StoryController extends Controller
         if ($story) {
             $story->active = 2;
             $story->save();
+            $author = User::where('user_id', $story->author_id)->first();
+            if ($author && $author->role === 'author') {
+                // Tạo thông báo
+                Notification::create([
+                    'user_id' => $author->user_id,
+                    'title' => 'Thông báo !',
+                    'message' => 'Truyện ' . $story->title . ' của bạn đã được vô hiệu hóa do không cập nhật trong thời gian dài!',
+                    'is_read' => false,
+                    'story_id' => $story->story_id,
+                ]);
+
+                // Trả về thông báo đã gửi
+                return response()->json([
+                    "message" => "Phê duyệt thành công và thông báo đã được gửi đến user_id: " . $author->user_id
+                ], 200);
+            }
             return response()->json(["message" => "Vô hiệu hóa truyện thành công"], 200);
         } else {
             return response()->json(["message" => "Truyện không tồn tại"], 404);
@@ -211,6 +244,22 @@ class StoryController extends Controller
         if ($story) {
             $story->active = 3;
             $story->save();
+            $author = User::where('user_id', $story->author_id)->first();
+            if ($author && $author->role === 'author') {
+                // Tạo thông báo
+                Notification::create([
+                    'user_id' => $author->user_id,
+                    'title' => 'Yêu cầu duyệt truyện',
+                    'message' => 'Truyện ' . $story->title . ' của bạn đã bị từ chối phê duyệt do không đủ yêu cầu',
+                    'is_read' => false,
+                    'story_id' => $story->story_id,
+                ]);
+
+                // Trả về thông báo đã gửi
+                return response()->json([
+                    "message" => "Phê duyệt thành công và thông báo đã được gửi đến user_id: " . $author->user_id
+                ], 200);
+            }
             return response()->json(["message" => "Hủy phê truyện thành công"], 200);
         } else {
             return response()->json(["message" => "Truyện không tồn tại"], 404);
@@ -258,7 +307,7 @@ class StoryController extends Controller
                 $query->with(['chapters' => function ($query) {
                     $query->with(['chapterImages', 'comments', 'notifications']);
                 }, 'categories', 'author', 'favouritedByUsers', 'usersView'])
-                ->withCount('storyViews');
+                    ->withCount('storyViews');
             },])
 
             ->get()
@@ -276,11 +325,8 @@ class StoryController extends Controller
 
     public function totalStories()
     {
-<<<<<<<<< Temporary merge branch 1
         $totalStories = Story::where('active', 1)->count();
-=========
         $totalStories = Story::count();
->>>>>>>>> Temporary merge branch 2
         return response()->json(['total_stories' => $totalStories], 200);
         return $totalStories;
     }

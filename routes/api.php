@@ -41,6 +41,8 @@ Route::apiResource('categories', CategoryController::class);
 Route::post('/notifications', [NotificationController::class, 'store']);
 Route::get('/notifications/user/{userId}', [NotificationController::class, 'getByUserId']);
 Route::patch('/notifications/read/{id}', [NotificationController::class, 'markAsRead']);
+Route::get('/notifications/author/{authorId}', [NotificationController::class, 'getNotificationsByAuthor']);
+Route::delete('/notifications/delete/{id}', [NotificationController::class, 'destroy']);
 
 //favourite story
 Route::post('/favourite-story', [FavouriteController::class, 'favouriteStory']);
