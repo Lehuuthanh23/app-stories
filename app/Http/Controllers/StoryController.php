@@ -254,10 +254,18 @@ class StoryController extends Controller
     public function getUserViewedStories($user_id)
     {
         $viewedStories = StoryView::where('user_id', $user_id)
-            ->with('story')
-            ->get();
+            ->with(['story' => function ($query) {
+                $query->with(['chapters' => function ($query) {
+                    $query->with(['chapterImages', 'comments', 'notifications']);
+                }, 'categories', 'author', 'favouritedByUsers', 'usersView'])
+                ->withCount('storyViews');
+            },])
 
-        return response()->json(['data' => $viewedStories], 200);
+            ->get()
+            ->map(function ($storyView) {
+                return $storyView->story;
+            });
+        return response()->json(['data' => StoryResource::collection($viewedStories)], 200);
     }
     public function getTotalViews($story_id)
     {
@@ -268,7 +276,11 @@ class StoryController extends Controller
 
     public function totalStories()
     {
+<<<<<<<<< Temporary merge branch 1
         $totalStories = Story::where('active', 1)->count();
+=========
+        $totalStories = Story::count();
+>>>>>>>>> Temporary merge branch 2
         return response()->json(['total_stories' => $totalStories], 200);
         return $totalStories;
     }
