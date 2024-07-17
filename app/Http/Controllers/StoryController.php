@@ -251,7 +251,14 @@ class StoryController extends Controller
 
         return response()->json(['message' => 'Xem truyện thành công'], 200);
     }
+    public function getUserViewedStories($user_id)
+    {
+        $viewedStories = StoryView::where('user_id', $user_id)
+            ->with('story')
+            ->get();
 
+        return response()->json(['data' => $viewedStories], 200);
+    }
     public function getTotalViews($story_id)
     {
         $totalViews = StoryView::where('story_id', $story_id)->count();
@@ -261,7 +268,10 @@ class StoryController extends Controller
 
     public function totalStories()
     {
+
+        $totalStories = Story::count();
         $totalStories = Story::where('active', 1)->count();
+
         return response()->json(['total_stories' => $totalStories], 200);
         return $totalStories;
     }
