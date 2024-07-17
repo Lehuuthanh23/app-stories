@@ -18,7 +18,12 @@ Route::get('/new/users', [UserController::class, 'getNewUsers']);
 //stories
 Route::apiResource('stories', StoryController::class);
 Route::patch('/stories/approve/{id}', [StoryController::class, 'approveStory']);
+Route::patch('/stories/completed/{id}', [StoryController::class, 'completedStory']);
+Route::patch('/stories/disable/{id}', [StoryController::class, 'disableStory']);
+Route::patch('/stories/noapprove/{id}', [StoryController::class, 'noApproveStory']);
+
 Route::get('/total/stories', [StoryController::class, 'totalStories']);
+Route::get('/new/story', [StoryController::class, 'getNewStories']);
 
 //View story
 Route::post('/story/view/{story_id}', [StoryController::class, 'addView']);
@@ -27,6 +32,7 @@ Route::get('/viewStory/{user_id}', [StoryController::class, 'getUserViewedStorie
 
 //chapters
 Route::apiResource('chapters', ChapterController::class);
+Route::patch('/update/images', [ChapterController::class, 'updateImages']);
 
 //categories
 Route::apiResource('categories', CategoryController::class);
