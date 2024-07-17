@@ -15,5 +15,8 @@ class StoryView extends Model
         'view_count',
         'last_viewed'
     ];
+    public function story()
+    {
+        return $this->belongsTo(Story::class, 'story_id');
+    }
 }
-
