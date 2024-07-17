@@ -258,7 +258,7 @@ class StoryController extends Controller
                 $query->with(['chapters' => function ($query) {
                     $query->with(['chapterImages', 'comments', 'notifications']);
                 }, 'categories', 'author', 'favouritedByUsers', 'usersView'])
-                ->withCount('storyViews');
+                    ->withCount('storyViews');
             },])
 
             ->get()
@@ -297,7 +297,8 @@ class StoryController extends Controller
             return response()->json(['message' => 'Tham số time_period không hợp lệ. Chỉ chấp nhận "week" hoặc "month".'], 400);
         }
 
-        $newUsersCount = Story::where('created_at', '>=', $startDate)->count();
+        $newUsersCount = Story::where('created_at', '>=', $startDate)->where('active', 1)->count();
+
         return response()->json(['new_story_count' => $newUsersCount]);
     }
 }
