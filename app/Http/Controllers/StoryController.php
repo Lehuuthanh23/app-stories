@@ -49,7 +49,7 @@ class StoryController extends Controller
             }, function ($query) {
                 $query->orderBy('story_views_count', 'desc');
             })
-           ->paginate(5);
+            ->paginate(5);
 
         return StoryResource::collection($stories);
     }
@@ -210,7 +210,14 @@ class StoryController extends Controller
 
         return response()->json(['message' => 'Xem truyện thành công'], 200);
     }
+    public function getUserViewedStories($user_id)
+    {
+        $viewedStories = StoryView::where('user_id', $user_id)
+            ->with('story')
+            ->get();
 
+        return response()->json(['data' => $viewedStories], 200);
+    }
     public function getTotalViews($story_id)
     {
         $totalViews = StoryView::where('story_id', $story_id)->count();
@@ -218,7 +225,8 @@ class StoryController extends Controller
         return response()->json(['total_views' => $totalViews], 200);
     }
 
-    public function totalStories(){
+    public function totalStories()
+    {
         $totalStories = Story::count();
         return response()->json(['total_stories' => $totalStories], 200);
         return $totalStories;
