@@ -23,6 +23,7 @@ Route::get('/total/stories', [StoryController::class, 'totalStories']);
 //View story
 Route::post('/story/view/{story_id}', [StoryController::class, 'addView']);
 Route::get('/story/view/{story_id}', [StoryController::class, 'getTotalViews']);
+Route::get('/viewStory/{user_id}', [StoryController::class, 'getUserViewedStories']);
 
 //chapters
 Route::apiResource('chapters', ChapterController::class);
@@ -38,6 +39,7 @@ Route::patch('/notifications/read/{id}', [NotificationController::class, 'markAs
 //favourite story
 Route::post('/favourite-story', [FavouriteController::class, 'favouriteStory']);
 Route::post('/delete-favourite-story', [FavouriteController::class, 'deleteFavourite']);
+Route::get('/get-favourite-story/{user_id}', [FavouriteController::class, 'getFavouriteStories']);
 
 //comment
 Route::apiResource('/comment', CommentController::class);

@@ -35,6 +35,8 @@ class StoryResource extends JsonResource
             'chapters' => ChapterResource::collection($this->whenLoaded('chapters')),
             'license_image' => $this->licenseImagePaths(),
             'cover_image' => $this->coverImagePaths(),
+            'created_at' => $this->created_at,
+            'updated_at' => $this->updated_at,
         ];
     }
 }
