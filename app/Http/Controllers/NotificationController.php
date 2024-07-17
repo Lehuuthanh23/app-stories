@@ -56,7 +56,17 @@ class NotificationController extends Controller
     public function getByUserId($userId)
     {
         // Get all notifications for the given user ID
-        $notifications = Notification::where('user_id', $userId)->with(['user', 'chapter', 'story'])->get();
+        $notifications = Notification::where('user_id', $userId)->with(['user',   'story' => function ($query) {
+            $query->with([
+                'chapters' => function ($query) {
+                    $query->with(['chapterImages', 'comments', 'notifications']);
+                },
+                'categories',
+                'author',
+                'favouritedByUsers',
+                'usersView'
+            ]);
+        },])->get();
         return  NotificationResource::collection($notifications);
     }
     public function getByAdminRole()
